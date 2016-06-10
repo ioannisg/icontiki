@@ -29,6 +29,12 @@
  */
 
 #include <stdio.h>
+#include "lib/assert.h"
+
+void __attribute__((weak)) assert_arch(void)
+{
+  while(1);
+}
 
 void
 _xassert(const char *file, int lineno)
@@ -38,4 +44,5 @@ _xassert(const char *file, int lineno)
    * loop for a while;
    * call _reset_vector__();
    */
+  assert_arch();
 }

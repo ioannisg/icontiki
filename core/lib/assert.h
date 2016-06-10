@@ -45,4 +45,6 @@ void _xassert(const char *, int);
 #define __CTASSERT(x, y)        typedef char __assert ## y[(x) ? 1 : -1]
 #endif
 
+/* To be implemented in CPU / platform */
+void assert_arch(void);
 #endif /* ASSERT_H_ */
