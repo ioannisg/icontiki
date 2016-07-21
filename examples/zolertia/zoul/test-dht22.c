@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Loughborough University - Computer Science
+ * Copyright (c) 2016, Zolertia <http://www.zolertia.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,38 +27,62 @@
  * SUCH DAMAGE.
  *
  * This file is part of the Contiki operating system.
+ *
  */
-
 /**
+ * \addtogroup zoul-examples
+ * @{
+ *
+ * \defgroup zoul-dht22-test DHT22 temperature and humidity sensor test
+ *
+ * Demonstrates the use of the DHT22 digital temperature and humidity sensor
+ * @{
+ *
  * \file
- *         This node is part of the RPL multicast example. It basically
- *         represents a node that does not join the multicast group
- *         but still knows how to forward multicast packets
- *         The example will work with or without any number of these nodes
- *
- *         Also, performs some sanity checks for the contiki configuration
- *         and generates an error if the conf is bad
- *
+ *         A quick program for testing the DHT22 temperature and humidity sensor
  * \author
- *         George Oikonomou - <oikonomou@users.sourceforge.net>
+ *         Antonio Lignan <alinan@zolertia.com>
  */
-
+/*---------------------------------------------------------------------------*/
+#include <stdio.h>
 #include "contiki.h"
-#include "contiki-net.h"
-#include "net/ipv6/multicast/uip-mcast6.h"
-
-#if !NETSTACK_CONF_WITH_IPV6 || !UIP_CONF_ROUTER || !UIP_IPV6_MULTICAST || !UIP_CONF_IPV6_RPL
-#error "This example can not work with the current contiki configuration"
-#error "Check the values of: NETSTACK_CONF_WITH_IPV6, UIP_CONF_ROUTER, UIP_CONF_IPV6_RPL"
-#endif
+#include "dev/dht22.h"
 /*---------------------------------------------------------------------------*/
-PROCESS(mcast_intermediate_process, "Intermediate Process");
-AUTOSTART_PROCESSES(&mcast_intermediate_process);
+PROCESS(remote_dht22_process, "DHT22 test");
+AUTOSTART_PROCESSES(&remote_dht22_process);
 /*---------------------------------------------------------------------------*/
-PROCESS_THREAD(mcast_intermediate_process, ev, data)
+static struct etimer et;
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(remote_dht22_process, ev, data)
 {
-  PROCESS_BEGIN();
+  int16_t temperature, humidity;
 
+  PROCESS_BEGIN();
+  SENSORS_ACTIVATE(dht22);
+
+  /* Let it spin and read sensor data */
+
+  while(1) {
+    etimer_set(&et, CLOCK_SECOND);
+    PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et));
+
+    /* The standard sensor API may be used to read sensors individually, using
+     * the `dht22.value(DHT22_READ_TEMP)` and `dht22.value(DHT22_READ_HUM)`,
+     * however a single read operation (5ms) returns both values, so by using
+     * the function below we save one extra operation
+     */
+    if(dht22_read_all(&temperature, &humidity) != DHT22_ERROR) {
+      printf("Temperature %02d.%02d ºC, ", temperature / 10, temperature % 10);
+      printf("Humidity %02d.%02d RH\n", humidity / 10, humidity % 10);
+    } else {
+      printf("Failed to read the sensor\n");
+    }
+  }
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
+/**
+ * @}
+ * @}
+ */
+

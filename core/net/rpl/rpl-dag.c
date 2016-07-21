@@ -1086,6 +1086,7 @@ rpl_join_instance(uip_ipaddr_t *from, rpl_dio_t *dio)
       || (!RPL_WITH_STORING && (dio->mop == RPL_MOP_STORING_NO_MULTICAST
           || dio->mop == RPL_MOP_STORING_MULTICAST))) {
     PRINTF("RPL: DIO advertising a non-supported MOP %u\n", dio->mop);
+    return;
   }
 
   /* Determine the objective function by using the
@@ -1435,7 +1436,7 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
   rpl_dag_t *dag, *previous_dag;
   rpl_parent_t *p;
 
-#if RPL_CONF_MULTICAST
+#if RPL_WITH_MULTICAST
   /* If the root is advertising MOP 2 but we support MOP 3 we can still join
    * In that scenario, we suppress DAOs for multicast targets */
   if(dio->mop < RPL_MOP_STORING_NO_MULTICAST) {
